@@ -1,10 +1,9 @@
 [build]
-  command = "mkdir -p netlify/functions"
+  command = "npm install"
   publish = "."
 
 [functions]
   node_bundler = "esbuild"
-  external_node_modules = []
 
 [[redirects]]
   from = "/api/*"
