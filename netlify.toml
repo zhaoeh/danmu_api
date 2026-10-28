@@ -5,6 +5,7 @@
 [build.environment]
   TOKEN = "smb798"
   ANIME_TITLE_FILTER = "越南语版|速看版|国际版"
+  ENABLE_ANIME_EPISODE_FILTER = "true"
   GROUP_MINUTE = "0.17"
   COMMENT_CACHE_MINUTES = "60"
   PLATFORM_ORDER = "bilibili,qq,iqiyi,youku,mango"
