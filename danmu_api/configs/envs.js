@@ -242,7 +242,7 @@ export class Envs {
    * @returns {Array} 平台排序数组
    */
   static resolvePlatformOrder() {
-    const rawOrder = this.get('PLATFORM_ORDER', '', 'string');
+    const rawOrder = this.get('PLATFORM_ORDER', 'bilibili,qq,iqiyi,youku,mango', 'string');
     
     const orderArr = rawOrder
       .split(',')
@@ -589,7 +589,7 @@ export class Envs {
    */
   static resolveAnimeTitleFilter() {
     // 读取环境变量，如果没有设置则返回null
-    const filterStr = this.get('ANIME_TITLE_FILTER', '', 'string', false).trim();
+    const filterStr = this.get('ANIME_TITLE_FILTER', '越南语版|速看版|国际版', 'string', false).trim();
     
     if (!filterStr) {
       this.accessedEnvVars.set('ANIME_TITLE_FILTER', '');
@@ -709,8 +709,8 @@ export class Envs {
       'BILIBILI_COOKIE': { category: 'source', type: 'text', description: 'B站Cookie' },
       'DOUBAN_COOKIE': { category: 'source', type: 'text', description: '豆瓣Cookie' },
       'YOUKU_CONCURRENCY': { category: 'source', type: 'number', description: '优酷并发配置，默认8', min: 1, max: 16 },
-      'TENCENT_CONCURRENCY': { category: 'number', category: 'source', description: '腾讯弹幕分片并发配置，默认100', min: 1, max: 200 },
-      'IQIYI_CONCURRENCY': { category: 'number', category: 'source', description: '爱奇艺弹幕分片并发配置，默认100', min: 1, max: 200 },
+      'TENCENT_CONCURRENCY': { category: 'source', type: 'number', description: '腾讯弹幕分片并发配置，默认100', min: 1, max: 200 },
+      'IQIYI_CONCURRENCY': { category: 'source', type: 'number', description: '爱奇艺弹幕分片并发配置，默认100', min: 1, max: 200 },
       'DANDANPLAY_ACCOUNT': { category: 'source', type: 'text', description: '弹弹play账号（dandan 源使用）。\n与密码同时填写后开启 NipaPlay 中转弹弹play辅助服务，使用 NipaPlay 获取弹幕与兜底，解决默认服务端无弹幕与更新缓慢的问题，并开启弹弹聚合弹幕实时拉取功能\n（实时拉取注意：需先开启对应源；指向的平台视频若已下架将无法获取；含巴哈姆特平台时需确保能够连通巴哈）。' },
       'DANDANPLAY_PASSWORD': { category: 'source', type: 'text', description: '弹弹play密码（dandan 源使用）\n与账号同时填写后开启 NipaPlay 中转弹弹play辅助服务。\n点击编辑界面的测试连通性按钮可验证账号与 NipaPlay 中转弹弹play服务端是否可用' },
       
@@ -775,7 +775,7 @@ export class Envs {
     return {
       vodAllowedPlatforms: this.VOD_ALLOWED_PLATFORMS,
       allowedPlatforms: this.ALLOWED_PLATFORMS,
-      token: this.get('TOKEN', 'smb798', 'string', true), // token，默认改为smb798
+      token: this.get('TOKEN', 'smb798', 'string', true), // token，默认smb798
       adminToken: this.get('ADMIN_TOKEN', '', 'string', true), // admin token，用于系统管理访问控制
       favoriteRequireAdmin: this.get('FAVORITE_REQUIRE_ADMIN', false, 'boolean'), // 收藏写入和管理接口是否必须使用 admin token；列表始终公开
       localDanmuNotRequireAdmin: this.get('LOCAL_DANMU_NOT_REQUIRE_ADMIN', false, 'boolean'),
@@ -799,7 +799,7 @@ export class Envs {
       episodeTitleFilter: this.resolveEpisodeTitleFilter(), // 剧集标题正则过滤
       titleNoiseFilter: this.resolveTitleNoiseFilter(), // 剧名杂音清理规则
       blockedWords: this.get('BLOCKED_WORDS', '', 'string'), // 屏蔽词列表
-      groupMinute: Math.min(this.get('GROUP_MINUTE', 1, 'number'), 30), // 分钟内合并去重（默认 1，最大值30，0表示不去重）
+      groupMinute: Math.min(this.get('GROUP_MINUTE', 0.17, 'number'), 30), // 10秒合并去重
       danmuLimit: this.get('DANMU_LIMIT', 0, 'number'), // 等间隔采样限制弹幕总数，单位为k，即千：默认 0，表示不限制弹幕数，若改为5，弹幕总数在超过5000的情况下会将弹幕数控制在5000
       uiTheme: this.get('UI_THEME', 'lavender', 'string').toLowerCase(), // 管理界面主题
       proxyUrl: this.get('PROXY_URL', '', 'string', true), // 代理/反代地址
@@ -814,10 +814,10 @@ export class Envs {
       localCacheEnabled: this.get('LOCAL_CACHE_ENABLED', true, 'boolean'), // 允许使用已有 .cache 目录保存通用文件缓存
       localRedisUrl: this.get('LOCAL_REDIS_URL', '', 'string', true), // 本地 Redis 连接URL，示例：redis://:password@127.0.0.1:6379/0，只支持本地部署和docker部署
       rateLimitMaxRequests: this.get('RATE_LIMIT_MAX_REQUESTS', 3, 'number'), // 限流配置：时间窗口内最大请求次数（默认 3，0表示不限流）
-      enableAnimeEpisodeFilter: this.get('ENABLE_ANIME_EPISODE_FILTER', false, 'boolean'), // 控制手动搜索的时候是否根据ANIME_TITLE_FILTER进行剧名过滤以及根据EPISODE_TITLE_FILTER进行集标题过滤（默认 false，禁用过滤）
+      enableAnimeEpisodeFilter: this.get('ENABLE_ANIME_EPISODE_FILTER', true, 'boolean'), // 默认开启过滤
       logLevel: this.get('LOG_LEVEL', 'info', 'string'), // 日志级别配置（默认 info，可选值：error, warn, info）
       searchCacheMinutes: this.get('SEARCH_CACHE_MINUTES', 3, 'number'), // 搜索结果缓存时间配置（分钟，默认 3）
-      commentCacheMinutes: this.get('COMMENT_CACHE_MINUTES', 3, 'number'), // 弹幕缓存时间配置（分钟，默认 3）
+      commentCacheMinutes: this.get('COMMENT_CACHE_MINUTES', 60, 'number'), // 弹幕缓存1小时
       commentCacheMinCount: this.get('COMMENT_CACHE_MIN_COUNT', 100, 'number'), // 弹幕缓存最少条数，低于该值时忽略缓存（默认 100，0 表示关闭）
       hongguoMergeAllEpisodes: this.get('HONGGUO_MERGE_ALL_EPISODES', false, 'boolean'), // 红果短剧是否合并全集弹幕（默认 false）
       convertTopBottomToScroll: this.get('CONVERT_TOP_BOTTOM_TO_SCROLL', false, 'boolean'), // 顶部/底部弹幕转换为浮动弹幕配置（默认 false，禁用转换）
