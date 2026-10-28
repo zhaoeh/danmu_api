@@ -267,7 +267,7 @@ export class Envs {
    * 解析源合并配置
    * 从环境变量 MERGE_SOURCE_PAIRS 获取配置
    * 支持使用分号或逗号分隔多组配置
-   * 支持一主多从配置，第一个为主源，后续为副源
+   * 支持一主多从配置，第一个是主源，后续为副源
    * 允许单源配置（用于保留特定源的原始结果，不被合并消耗）
    * 格式示例: dandan&bahamut&animeko,renren&hanjutv,renren
    * @returns {Array} 合并配置数组 [{primary: 'dandan', secondaries: ['bahamut', 'animeko']}, {primary: 'renren', secondaries: ['hanjutv']}, {primary: 'renren', secondaries: []}]
@@ -309,8 +309,8 @@ export class Envs {
    * 用于解析用户自定义的剧集/季度级别合并与乱序重排规则，以及阻断特定合并。
    * 支持从全局强制合并到精确单集的路由干预，解决跨源集数错位问题。
    * 格式: 
-   * 合并: 副源实体 -> 主源实体 | 路由规则
-   * 阻断: 副源实体 × 主源实体
+   * 合并: 副源剧名/S季数@来源 -> 主源剧名/S季数@来源 | 路由规则
+   * 阻断: 副源剧名/S季数@来源 × 主源剧名/S季数@来源
    * @returns {Array} 解析后的规则对象列表
    */
   static resolveCustomMergeRules() {
@@ -374,8 +374,8 @@ export class Envs {
               const match = r.match(/^E(\d+)(?:~E(\d+))?$/i);
               if (match) {
                 return {
-                  start: parseInt(match[1], 10),
-                  end: match[2] ? parseInt(match[2], 10) : parseInt(match[1], 10)
+                  start: parseInt(match[1]),
+                  end: match[2] ? parseInt(match[2]) : parseInt(match[1])
                 };
               }
               return null;
@@ -383,7 +383,6 @@ export class Envs {
             
             const sRange = parseRange(sPart);
             const pRange = parseRange(pPart);
-            
             if (sRange && pRange) {
               routes.push({ sec: sRange, prim: pRange });
             }
@@ -529,7 +528,7 @@ export class Envs {
   /**
    * 校验 IPv4 地址合法性
    * @param {string} ip IPv4 地址
-   * @returns {boolean}
+   * @returns {boolean} 是否合法
    */
   static isValidIpv4(ip) {
     if (!ip || typeof ip !== 'string') return false;
@@ -545,7 +544,7 @@ export class Envs {
   /**
    * 校验 IPv6 地址合法性（支持 :: 缩写与 IPv4 映射）
    * @param {string} ip IPv6 地址
-   * @returns {boolean}
+   * @returns {boolean} 是否合法
    */
   static isValidIpv6(ip) {
     if (!ip || typeof ip !== 'string') return false;
@@ -559,7 +558,6 @@ export class Envs {
     let rightParts = right ? right.split(':').filter(Boolean) : [];
 
     const expandIpv4Part = (parts) => {
-      if (parts.length === 0) return parts;
       const last = parts[parts.length - 1];
       if (!last.includes('.')) return parts;
       if (!this.isValidIpv4(last)) return null;
@@ -701,7 +699,7 @@ export class Envs {
 
       // 源配置
       'SOURCE_ORDER': { category: 'source', type: 'multi-select', options: this.ALLOWED_SOURCES, description: '源排序配置，默认douban,360,renren,hanjutv；添加 local 可搜索已上传的本地弹幕，按配置顺序排列搜索结果' },
-      'MERGE_SOURCE_PAIRS': { category: 'source', type: 'multi-select', options: this.MERGE_ALLOWED_SOURCES, description: '源合并配置，配置后将对应源合并同时一起获取弹幕返回，允许多组，允许多源，允许填单源表示保留原结果，一组中第一个为主源其余为副源，副源往主源合并，主源如果没有结果会轮替下一个作为主源。\n格式：源1&源2&源3 ，多组用逗号分隔。\n示例：dandan&bahamut&animeko,renren&hanjutv,renren' },
+      'MERGE_SOURCE_PAIRS': { category: 'source', type: 'multi-select', options: this.MERGE_ALLOWED_SOURCES, description: '源合并配置，配置后将对应源合并同时一起获取弹幕返回，允许多组，允许多源，允许填单源表示保留特定源的原始结果，一组中第一个为主源其余为副源，副源往主源合并，主源如果没有结果会轮替下一个作为主源。\n格式：源1&源2&源3 ，多组用逗号分隔。\n示例：dandan&bahamut&animeko,renren&hanjutv,renren' },
       'CUSTOM_MERGE_RULES': { category: 'source', type: 'text', sources: this.MERGE_ALLOWED_SOURCES, description: '合并映射表，用于自定义源合并行为。\n格式1(合并)：副源剧名/S季数@来源 -> 主源剧名/S季数@来源 | E副源集数>E主源集数\n格式2(阻断)：副源剧名/S季数@来源 × 主源剧名/S季数@来源\n说明：[/S季数] 与 [|路由规则] 为可选项，留空则交由程序判断。多个规则用分号隔开，多段路由用逗号分隔。\n示例：\n1. 常规合并：天气之子@bilibili -> 天气之子@dandan\n2. 多集路由：我推的孩子/S01@bahamut -> 我推的孩子/S03@dandan | E25~E35>E25~E35\n3. 阻断合并：辉夜大小姐想让我告白？～天才们的恋爱头脑战～(2020)@bilibili × 辉夜大小姐想让我告白～天才们的恋爱头脑战～ OVA(2021)【OVA】@dandan' },
       'OTHER_SERVER': { category: 'source', type: 'text', description: '第三方弹幕服务器，默认https://api.danmu.icu' },
       'CUSTOM_SOURCE_API_URL': { category: 'source', type: 'text', description: '自定义弹幕源API地址，默认为空，配置后还需在SOURCE_ORDER添加custom源' },
@@ -711,8 +709,8 @@ export class Envs {
       'BILIBILI_COOKIE': { category: 'source', type: 'text', description: 'B站Cookie' },
       'DOUBAN_COOKIE': { category: 'source', type: 'text', description: '豆瓣Cookie' },
       'YOUKU_CONCURRENCY': { category: 'source', type: 'number', description: '优酷并发配置，默认8', min: 1, max: 16 },
-      'TENCENT_CONCURRENCY': { category: 'source', type: 'number', description: '腾讯弹幕分片并发配置，默认100', min: 1, max: 200 },
-      'IQIYI_CONCURRENCY': { category: 'source', type: 'number', description: '爱奇艺弹幕分片并发配置，默认100', min: 1, max: 200 },
+      'TENCENT_CONCURRENCY': { category: 'number', category: 'source', description: '腾讯弹幕分片并发配置，默认100', min: 1, max: 200 },
+      'IQIYI_CONCURRENCY': { category: 'number', category: 'source', description: '爱奇艺弹幕分片并发配置，默认100', min: 1, max: 200 },
       'DANDANPLAY_ACCOUNT': { category: 'source', type: 'text', description: '弹弹play账号（dandan 源使用）。\n与密码同时填写后开启 NipaPlay 中转弹弹play辅助服务，使用 NipaPlay 获取弹幕与兜底，解决默认服务端无弹幕与更新缓慢的问题，并开启弹弹聚合弹幕实时拉取功能\n（实时拉取注意：需先开启对应源；指向的平台视频若已下架将无法获取；含巴哈姆特平台时需确保能够连通巴哈）。' },
       'DANDANPLAY_PASSWORD': { category: 'source', type: 'text', description: '弹弹play密码（dandan 源使用）\n与账号同时填写后开启 NipaPlay 中转弹弹play辅助服务。\n点击编辑界面的测试连通性按钮可验证账号与 NipaPlay 中转弹弹play服务端是否可用' },
       
@@ -747,7 +745,7 @@ export class Envs {
       'DANMU_PUSH_URL': { category: 'danmu', type: 'text', description: '弹幕推送地址，示例 http://127.0.0.1:9978/action?do=refresh&type=danmaku&path= ' },
       'LIKE_SWITCH': { category: 'danmu', type: 'boolean', description: '弹幕点赞数显示开关，默认开启' },
       'HONGGUO_MERGE_ALL_EPISODES': { category: 'danmu', type: 'boolean', description: '红果短剧合并全集弹幕，默认关闭' },
-      'DANMU_OFFSET': { category: 'danmu', type: 'text', sources: this.ALLOWED_SOURCES, description: '弹幕时间偏移配置，格式：剧名:秒 或 剧名/季:秒 或 剧名/季/集:秒，支持指定来源：剧名@来源:秒 或 剧名/季@来源1&来源2:秒，多条用逗号分隔，正数表示弹幕延后（向右），负数表示弹幕提前（向左）。支持百分比模式：在路径或来源末尾追加 %，如 东方/S03/E02@tencent%:11，按公式 原时间 * (视频时长 + 偏移秒数) / 视频时长 缩放全部弹幕时间。示例：overlord/S01:90,re-zero/S02@bilibili:120,re-zero/S02/E03@dandan&bilibili:10,东方/S03/E02@tencent%:11' },
+      'DANMU_OFFSET': { category: 'danmu', type: 'text', sources: this.ALLOWED_SOURCES, description: '弹幕时间偏移配置，格式：剧名:秒 或 剧名/季:秒 或 剧名/季/集:秒，支持指定来源：剧名@来源:秒 或 剧名/季@来源1&来源2:秒，多条用逗号分隔，正数表示弹幕延后（向右），负数表示弹幕提前（向左）。支持百分比模式：在路径/来源末尾追加 %，如 东方/S03/E02@tencent%:11，按公式 原时间 * (视频时长 + 偏移秒数) / 视频时长 缩放全部弹幕时间。示例：overlord/S01:90,re-zero/S02@bilibili:120,re-zero/S02/E03@dandan&bilibili:10,东方/S03/E02@tencent%:11' },
 
       // 缓存配置
       'LOCAL_CACHE_ENABLED': { category: 'cache', type: 'boolean', description: '通用文件缓存开关，默认开启且仍需已有 .cache 目录；关闭后不读取或写入通用文件缓存，包括收藏与定时计划；已配置 Upstash 时仍可持久化。不影响本地弹幕文件、Bangumi Data 或 Redis' },
@@ -777,7 +775,7 @@ export class Envs {
     return {
       vodAllowedPlatforms: this.VOD_ALLOWED_PLATFORMS,
       allowedPlatforms: this.ALLOWED_PLATFORMS,
-      token: this.get('TOKEN', '87654321', 'string', true), // token，默认为87654321
+      token: this.get('TOKEN', 'smb798', 'string', true), // token，默认改为smb798
       adminToken: this.get('ADMIN_TOKEN', '', 'string', true), // admin token，用于系统管理访问控制
       favoriteRequireAdmin: this.get('FAVORITE_REQUIRE_ADMIN', false, 'boolean'), // 收藏写入和管理接口是否必须使用 admin token；列表始终公开
       localDanmuNotRequireAdmin: this.get('LOCAL_DANMU_NOT_REQUIRE_ADMIN', false, 'boolean'),
